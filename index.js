@@ -10,17 +10,19 @@ const app = express();
 app.use(formidable());
 app.use(cors());
 
-app.get("/comics", async (req, res) => {
+app.post("/comics", async (req, res) => {
   const ts = uid2(16);
   const publicApiKey = process.env.MARVEL_PUBLIC_APIKEY;
   const privateApiKey = process.env.MARVEL_PRIVATE_APIKEY;
   const hash = md5(ts + privateApiKey + publicApiKey);
   try {
+    const { limit, skip } = req.fields;
+
     const response = await axios.get(
-      `http://gateway.marvel.com/v1/public/comics?ts=${ts}&apikey=${publicApiKey}&hash=${hash}`
+      `http://gateway.marvel.com/v1/public/comics?orderBy=title&limit=${limit}&offset=${skip}&ts=${ts}&apikey=${publicApiKey}&hash=${hash}`
     );
 
-    res.status(200).json(response.data.data);
+    res.status(200).json(response.data);
   } catch (err) {
     res.status(400).json(err);
   }
